@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BASE_URL from "../config/api";
+
 export default function Auth() {
   const [isSignup, setIsSignup] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -10,7 +11,7 @@ export default function Auth() {
   const [password, setPassword] = useState("");
 
   const navigate = useNavigate();
-
+ console.log("BASE_URL =", BASE_URL);
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -37,21 +38,22 @@ export default function Auth() {
         alert(data.message || "Something went wrong");
         return;
       }
-if (isSignup) {
 
-  navigate("/verify-email");
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
 
-} else {
+      localStorage.setItem("user", JSON.stringify(data));
 
-  localStorage.setItem(
-    "token",
-    data.token
-  );
-
- window.location.replace("/dashboard");
-}
-    } catch (err) {
-      console.error(err);
+      if (isSignup) {
+        alert("Registration Successful");
+        navigate("/verify-email");
+      } else {
+        alert("Login Successful");
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.error("Auth Error:", error);
       alert("Server error");
     }
   };
@@ -59,13 +61,11 @@ if (isSignup) {
   return (
     <div className="h-screen flex items-center justify-center bg-gradient-to-r from-indigo-500 to-purple-600">
       <div className="bg-white p-8 rounded-2xl shadow-xl w-80">
-        
         <h2 className="text-2xl font-bold text-center mb-6">
           {isSignup ? "Create Account 🚀" : "Welcome Back 👋"}
         </h2>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          
           {isSignup && (
             <input
               type="text"
@@ -95,6 +95,7 @@ if (isSignup) {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+
             <span
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-2 cursor-pointer"
@@ -103,13 +104,17 @@ if (isSignup) {
             </span>
           </div>
 
-          <button className="bg-indigo-500 hover:bg-indigo-600 text-white py-2 rounded-lg">
+          <button
+            type="submit"
+            className="bg-indigo-500 hover:bg-indigo-600 text-white py-2 rounded-lg"
+          >
             {isSignup ? "Sign Up" : "Login"}
           </button>
         </form>
 
         <p className="text-center mt-4 text-sm">
           {isSignup ? "Already have an account?" : "Don't have an account?"}
+
           <span
             onClick={() => setIsSignup(!isSignup)}
             className="text-indigo-600 font-semibold cursor-pointer ml-1"
@@ -119,5 +124,6 @@ if (isSignup) {
         </p>
       </div>
     </div>
+    
   );
 }
